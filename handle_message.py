@@ -52,12 +52,24 @@ class MessageHandler:
         Returns:
             None
         """
-        comeback_list = ["selber", "komm philo note junge", "halt die schnauze", "willst du stress", "komm doch",
-                         "willst du eine tracht prügel?"]
+        author_name = str(message.author)[:-5]
+        # specific insults
+        if clean_message == "lösch dich":
+            await message.channel.send(f"lösch dich selber @{author_name}")
+            return
+        # lebenserfolge
+        elif "in deinem leben erreicht" in clean_message:
+            if message.author.permissions_in(message.channel).administrator:
+                await message.channel.send("Guck mal wer redet, warst du schon mal Hamburger Meister oder kannst die Definition der Emser Depesche auswendig? Genau, NEIN")
+            else:
+                await message.channel.send("Guck mal wer redet, du hast ja nicht mal Rechte auf diesem Server.")
+        # other insults
+        comeback_list = ["Das bist du selber.", "Komm philo note Junge", "Halt die Schnauze", "Willst du Stress?",
+                         "komm doch", "Willst du eine Tracht Prügel?"]
         # detect insults
         words = clean_message.split(" ")
         insult_list = ["arschloch", "hurensohn", "lappen", "fick", "dumm", "dick", "spasst", "schwul", "gay",
-                       "kackspasst", "kacke"]
+                       "kackspasst", "kacke", "scheisse", "scheiße"]
         for c, word in enumerate(words):
             if word in insult_list:
                 if c == 0 or not ("nicht" == words[c - 1] or "kein" == words[c - 1]):
@@ -79,9 +91,9 @@ class MessageHandler:
         try:
             key = list(source[0]["meaning"].keys())[0]
             definition = source[0]["meaning"][key][0]["definition"]
-            await message.channel.send(f"die definition von {word} ist: {definition}")
+            await message.channel.send(f"Die Definition von {word} ist: {definition}")
         except:
-            await message.channel.send(f"Gibt keine definition für dein blödes Wort.")
+            await message.channel.send(f"Gibt keine Definition für dein blödes Wort.")
 
     async def handle_message(self, message):
         """
@@ -97,21 +109,21 @@ class MessageHandler:
 
         # clean up message as string
         clean_message = message.clean_content[5:].lower()
-        # get rid of author tag
-        author_name = str(message.author)[:-5]
 
         # real commands
-        if clean_message == "lösch dich":
-            await message.channel.send(f"lösch dich selber @{author_name}")
-
-        elif clean_message.startswith("votekick"):
+        if clean_message.startswith("votekick"):
             await self.votekick(clean_message, message)
 
         elif "emser depesche" in clean_message:
-            await message.channel.send("Die Emser Depesche ist ein internes Telegramm der norddeutschen Bundesregierung vom 13. Juli 1870. Darin unterrichtete der Diplomat Heinrich Abeken den norddeutschen Bundeskanzler Otto von Bismarck in Berlin über die Vorgänge in Bad Ems. Der Bundeskanzler informierte daraufhin die Presse über die Vorgänge. Diese Pressemitteilung wird zuweilen mit der eigentlichen Depesche verwechselt, weil Bismarck großteils den Wortlaut der Depesche wiederverwendete. Die Pressemitteilung führte zu Empörung in Frankreich und gilt als ein Auslöser des Deutsch-Französischen Krieges von 1870/71. Die Depesche selbst wurde nicht veröffentlicht.")
+            await message.channel.send(
+                "Die Emser Depesche ist ein internes Telegramm der norddeutschen Bundesregierung vom 13. Juli 1870. Darin unterrichtete der Diplomat Heinrich Abeken den norddeutschen Bundeskanzler Otto von Bismarck in Berlin über die Vorgänge in Bad Ems. Der Bundeskanzler informierte daraufhin die Presse über die Vorgänge. Diese Pressemitteilung wird zuweilen mit der eigentlichen Depesche verwechselt, weil Bismarck großteils den Wortlaut der Depesche wiederverwendete. Die Pressemitteilung führte zu Empörung in Frankreich und gilt als ein Auslöser des Deutsch-Französischen Krieges von 1870/71. Die Depesche selbst wurde nicht veröffentlicht.")
 
         elif clean_message.startswith("definiere"):
             await self.handle_definitions(clean_message, message)
+
+        elif clean_message == "hilfe":
+            command_list = ["votekick [Benutzer]", "definiere [wort]"]
+            await message.channel.send(f"Hier sind alle Befehle: {command_list}")
 
         # non commands, check for insults
         else:

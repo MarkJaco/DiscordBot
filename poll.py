@@ -39,8 +39,6 @@ class Poll:
                 votes_in_favor = reaction.count - 1
             elif reaction.emoji == self.emoji_against:
                 votes_against = reaction.count - 1
-        print("votes in favor ", votes_in_favor)
-        print("votes against ", votes_against)
         # poll successful
         if votes_in_favor - votes_against >= 2:
             await self.channel.send("Ergebnis ist dafür")
