@@ -18,34 +18,50 @@ class Poll:
         self.channel = channel
         self.time_limit = time_limit
         self.successful = None
-        self.votes_in_favor = 0
-        self.votes_against = 0
         self.members_voted = []
+        self.emoji_in_favor = "✅"
+        self.emoji_against = "❌"
 
-    async def end_poll(self):
+    async def end_poll(self, vote_message):
         """
         execute this method if poll should end
+        Args:
+            vote_message: the message people are voting on
         Returns:
             None
         """
         await self.channel.send(f"Abstimmung abgeschlossen")
+        # count votes
+        votes_in_favor = 0
+        votes_against = 0
+        for reaction in vote_message.reactions:
+            if reaction.emoji == self.emoji_in_favor:
+                votes_in_favor = reaction.count - 1
+            elif reaction.emoji == self.emoji_against:
+                votes_against = reaction.count - 1
+        print(f"votes in favor {votes_in_favor}")
+        print(f"votes against {votes_against}")
         # poll successful
-        if self.votes_in_favor - self.votes_against >= 3:
+        if votes_in_favor - votes_against >= 3:
             await self.channel.send("Ergebnis ist dafür")
             self.successful(self.member)
         else:
-            await self.channel.send("Ergebnis ist dafür")
+            await self.channel.send("Ergebnis ist dagegen")
 
     async def init_poll(self, message):
         """
         init poll, explain rules
         Returns:
-            None
+            the message instance people will use to vote
         """
         await self.channel.send(message)
-        await self.channel.send(f"'359! f1' steht für dafür und '359! f2' steht für dagegen.")
         await self.channel.send(f"Alle Benutzer haben eine Stimme, die sie innerhalb der nächsten {self.time_limit} Sekunden abgeben können.")
         await self.channel.send("Während dieser Zeit werden keine anderen commands funktionieren.")
+        # prepare specific message to vote
+        vote_message = self.channel.last_message
+        await vote_message.add_reaction(self.emoji_in_favor)
+        await vote_message.add_reaction(self.emoji_against)
+        return vote_message
 
     async def start_poll(self, message):
         """
@@ -55,6 +71,6 @@ class Poll:
         Returns:
             None
         """
-        await self.init_poll(message)
+        vote_message = await self.init_poll(message)
         time.sleep(self.time_limit)
-        await self.end_poll()
+        await self.end_poll(vote_message)

@@ -12,7 +12,6 @@ class MessageHandler:
 
     async def reset_poll(self):
         await self.current_poll.end_poll()
-        self.current_poll = None
 
     async def votekick(self, clean_message, message):
         """
@@ -36,8 +35,7 @@ class MessageHandler:
             await message.channel.send(f"Keinen solchen Benutzer gefunden.")
             return
         # member found, start vote
-        votekick_poll = poll.Poll(kick_member, message.channel)
-        self.current_poll = votekick_poll
+        votekick_poll = poll.Poll(kick_member, message.channel, 20)
         # kick user from voice channel if successful
         votekick_poll.successful = lambda m: m.edit.voice_channel(None)
         # start poll
@@ -65,9 +63,5 @@ class MessageHandler:
             await message.channel.send(f"lösch dich selber @{author_name}")
 
         elif clean_message.startswith("votekick"):
-            # don't start two polls at the same time
-            if not self.current_poll:
-                await self.votekick(clean_message, message)
-            else:
-                await message.author.channel.send("Eine Abstimmung läuft bereits")
+            await self.votekick(clean_message, message)
 
