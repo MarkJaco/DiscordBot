@@ -21,4 +21,4 @@ async def on_message(message):
     global current_poll
     await messageHandler.handle_message(message)
 
-client.run('NzUxNTI5Mjg3NjA1Mjg5MDcy.X1KaMA._lSW9wCW8gEsX7-0Iu01kB4XmO4')
+client.run('NzUxNTI5Mjg3NjA1Mjg5MDcy.X1KaMA.wq9dfFctolv58LFT1sVxULAuhQs')

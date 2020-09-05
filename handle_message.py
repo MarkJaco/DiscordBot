@@ -35,9 +35,9 @@ class MessageHandler:
             await message.channel.send(f"Keinen solchen Benutzer gefunden.")
             return
         # member found, start vote
-        votekick_poll = poll.Poll(kick_member, message.channel, 20)
+        votekick_poll = poll.Poll(kick_member, message.channel, 10)
         # kick user from voice channel if successful
-        votekick_poll.successful = lambda m: m.edit.voice_channel(None)
+        votekick_poll.successful = lambda m: m.edit(voice_channel=None)
         # start poll
         await votekick_poll.start_poll(f"Starte votekick für {kick_user}")
 
