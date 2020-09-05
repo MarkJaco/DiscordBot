@@ -43,27 +43,6 @@ class MessageHandler:
         # start poll
         await votekick_poll.start_poll(f"Starte votekick für {kick_user}")
 
-    async def handle_votes(self, clean_message, message):
-        """
-        handles votes for polls
-        Args:
-            clean_message: message as cleaned up string
-            message: message object
-        Returns:
-            None
-        """
-        # poll doesn't exist
-        if not self.current_poll:
-            await message.author.channel.send("Es läuft momentan keine Abstimmung.")
-            return
-        # poll does exist
-        if clean_message.startswith("f1"):
-            self.current_poll.votes_in_favor += 1
-        elif clean_message.startswith("f2"):
-            self.current_poll.votes_against += 1
-        # add member who voted to list
-        self.current_poll.members_voted.append(message.author)
-
     async def handle_message(self, message):
         """
         handle message in different branches
@@ -92,5 +71,3 @@ class MessageHandler:
             else:
                 await message.author.channel.send("Eine Abstimmung läuft bereits")
 
-        elif clean_message.startswith("f1") or clean_message.startswith("f2"):
-            await self.handle_votes(clean_message, message)
