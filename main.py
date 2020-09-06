@@ -1,6 +1,6 @@
 from discord.ext import commands
 import handle_message
-import time
+import helper
 
 
 client = commands.Bot(command_prefix='.')
@@ -21,4 +21,4 @@ async def on_message(message):
     global current_poll
     await messageHandler.handle_message(message)
 
-client.run('NzUxNTI5Mjg3NjA1Mjg5MDcy.X1KaMA.VKtxeTMK8bI3jC4s-PLsRf84y70')
+client.run(helper.token)

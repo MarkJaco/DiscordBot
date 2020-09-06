@@ -6,6 +6,7 @@ for example kicking someone from a voice channel
 import time
 import discord.errors
 
+
 class Poll:
     """
     new Poll, needs member to make poll about
@@ -13,6 +14,7 @@ class Poll:
     channel object which channel to write into
     time_limit how long poll should last in seconds
     """
+
     def __init__(self, member, channel, time_limit):
         self.member = member
         self.channel = channel
@@ -31,7 +33,8 @@ class Poll:
         Returns:
             None
         """
-        await self.send_message("Abstimmung abgeschlossen")
+        sent_msg = await self.channel.send("Abstimmung abgeschlossen")
+        self.delete_messages.append(sent_msg)
         # count votes
         votes_in_favor = 0
         votes_against = 0
@@ -42,28 +45,14 @@ class Poll:
                 votes_against = reaction.count - 1
         # poll successful
         if votes_in_favor - votes_against >= 2:
-            await self.send_message("Ergebnis ist dafür.")
+            self.delete_messages.append(await self.channel.send("Ergebnis ist dafür."))
             await self.successful(self.member)
         else:
-            await self.send_message("Ergebnis ist dagegen.")
+            self.delete_messages.append(await self.channel.send("Ergebnis ist dagegen."))
         # delete all messages
         time.sleep(3)
-        for msg in self.delete_messages:
-            try:
-                await msg.delete()
-            except discord.errors.NotFound:
-                pass
-
-    async def send_message(self, message):
-        """
-        sends message into discord channel
-        Args:
-            message: the message
-        Returns:
-            None
-        """
-        await self.channel.send(message)
-        self.delete_messages.append(self.channel.last_message)
+        for delete_msg in self.delete_messages:
+            await delete_msg.delete()
 
     async def init_poll(self, message):
         """
@@ -71,9 +60,11 @@ class Poll:
         Returns:
             the message instance people will use to vote
         """
-        await self.send_message(message)
-        await self.send_message(f"Alle Benutzer haben eine Stimme, die sie innerhalb der nächsten {self.time_limit} Sekunden abgeben können.")
-        await self.send_message("Während dieser Zeit werden keine anderen commands funktionieren.")
+        rule_message = f"{message}\n Alle Benutzer haben eine Stimme, die sie innerhalb der nächsten" \
+                       f" {self.time_limit} Sekunden abgeben können.\n Während dieser Zeit werden keine anderen" \
+                       f" commands funktionieren."
+        sent_msg = await self.channel.send(rule_message)
+        self.delete_messages.append(sent_msg)
         # prepare specific message to vote
         vote_message = self.channel.last_message
         await vote_message.add_reaction(self.emoji_in_favor)

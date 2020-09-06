@@ -42,6 +42,8 @@ class MessageHandler:
         votekick_poll.successful = lambda m: m.edit(voice_channel=None)
         # start poll
         await votekick_poll.start_poll(f"Starte votekick für {kick_user}")
+        # delete user message
+        await message.delete()
 
     async def handle_insults(self, clean_message, message):
         """
