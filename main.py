@@ -1,6 +1,6 @@
 from discord.ext import commands
 import handle_message
-import helper
+import secret
 
 
 client = commands.Bot(command_prefix='.')
@@ -21,4 +21,4 @@ async def on_message(message):
     global current_poll
     await messageHandler.handle_message(message)
 
-client.run(helper.token)
+client.run(secret.token)
