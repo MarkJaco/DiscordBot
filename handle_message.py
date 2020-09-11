@@ -15,6 +15,20 @@ class MessageHandler:
     async def reset_poll(self):
         await self.current_poll.end_poll()
 
+    def get_user(self, member_name, guild):
+        """
+        get user instance from just name string
+        Args:
+            member_name: string name of member to find
+            guild: discord server
+        Returns:
+            member object if found, or None if not found
+        """
+        for member in guild.members:
+            nickname = member.nick.lower() if member.nick else None
+            if nickname == member_name or member.name.lower() == member_name:
+                return member
+
     async def votekick(self, clean_message, message):
         """
         votekick certain user
@@ -26,12 +40,7 @@ class MessageHandler:
         """
         kick_user = clean_message[len("votekick") + 1:]
         # go through all members on server
-        kick_member = None
-        for member in message.author.guild.members:
-            nickname = member.nick.lower() if member.nick else None
-            if nickname == kick_user or member.name.lower() == kick_user:
-                kick_member = member
-                break
+        kick_member = self.get_user(kick_user, message.author.guild)
         # no member with given name
         if not kick_member:
             await message.channel.send(f"Keinen solchen Benutzer gefunden.")
@@ -42,6 +51,31 @@ class MessageHandler:
         votekick_poll.successful = lambda m: m.edit(voice_channel=None)
         # start poll
         await votekick_poll.start_poll(f"Starte votekick für {kick_user}")
+        # delete user message
+        await message.delete()
+
+    async def nick_change(self, clean_message, message):
+        """
+        change ...'s nickname to ...
+        put up for vote
+        Args:
+            clean_message: message command without 359!
+            message: message object from discord.py
+        Returns:
+            None
+        """
+        # ["votenick", "Benutzer", "neuer nick"]
+        split_message = clean_message.split(" ")
+        wanted_member = self.get_user(split_message[1], message.author.guild)
+        if not wanted_member:
+            await message.channel.send("Keinen solchen Benutzer gefunden.")
+            return
+        # start new poll
+        nick_poll = poll.Poll(wanted_member, message.channel, 10)
+        # change user nick if poll successful
+        nick_poll.successful = lambda m: m.edit(nick=split_message[2])
+        # start poll
+        await nick_poll.start_poll(f"Starte nickvote für {wanted_member}")
         # delete user message
         await message.delete()
 
@@ -123,8 +157,11 @@ class MessageHandler:
         elif clean_message.startswith("definiere"):
             await self.handle_definitions(clean_message, message)
 
+        elif clean_message.startswith("votenick"):
+            await self.nick_change(clean_message, message)
+
         elif clean_message == "hilfe":
-            command_list = ["votekick [Benutzer]", "definiere [wort]"]
+            command_list = ["votekick [Benutzer]", "definiere [wort]", "[votenick [Benutzer] [Nickname]]"]
             await message.channel.send(f"Hier sind alle Befehle: {command_list}")
 
         # non commands, check for insults
